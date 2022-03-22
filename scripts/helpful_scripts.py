@@ -1,12 +1,5 @@
-from brownie import (
-    accounts,
-    network,
-    config,
-    VRFCoordinatorMock,
-    linkToken,
-    Contract,
-    MockV3Aggregator,
-)
+from brownie import accounts, network, config, VRFCoordinatorMock, LinkToken, Contract
+from web3 import Web3
 
 
 OPENSEA_URL = "https://testnets.opensea.io/assets/{}/{}"
@@ -20,16 +13,10 @@ def get_account(id=None, index=None):
         return accounts.load(id)
     if network.show_active() in LOCAL_BLOCKCHAIN_ENVS:
         return accounts[0]
-    if network.show_active() in config["networks"]:
-        return accounts.add(config["wallets"]["from_key"])
-    return None
+    return accounts.add(config["wallets"]["from_key"])
 
 
-contract_to_mock = {
-    "vrf_coordinator": VRFCoordinatorMock,
-    "link_token": linkToken,
-    # "key_hash": keyhash,
-}
+contract_to_mock = {"link_token": LinkToken, "vrf_coordinator": VRFCoordinatorMock}
 
 
 def get_contract(contract_name):
@@ -51,20 +38,34 @@ def get_contract(contract_name):
         contract = contract_type[-1]
     else:
         contract_address = config["networks"][network.show_active()][contract_name]
-
         contract = Contract.from_abi(
-            contract_type._name, contract_address, contract_type.address
+            contract_type._name, contract_address, contract_type.abi
         )
     return contract
 
 
-DECIMALS = 8
-INITIAL_VALUE = 200000000000
-
-
-def deploy_mocks(decimals=DECIMALS, initial_value=INITIAL_VALUE):
+def deploy_mocks():
+    print(f"the active network is {network.show_active()}")
+    print("Deploying mocks")
     account = get_account()
-    MockV3Aggregator.deploy(decimals, initial_value, {"from": account})
-    link_token = linkToken.deploy({"from": account})
-    VRFCoordinatorMock.deploy(link_token.address, {"from": account})
-    print("D E P L O Y E D . . . ! ! !")
+    print("Deploying mock link token")
+    # MockV3Aggregator.deploy(decimals, initial_value, {"from": account})
+    link_token = LinkToken.deploy({"from": account})
+    print(f"Link token deployed to {link_token.address}")
+    print("Deploying mock vrfcoordinator")
+    vrf_coordinator = VRFCoordinatorMock.deploy(link_token.address, {"from": account})
+    print(f"VRFcoordinator deploying to {vrf_coordinator.address}")
+    print("D E P L O Y E D . . .done ! ! !")
+
+
+def fund_with_link(
+    contract_address, account=None, link_token=None, amount=Web3.toWei(1, "ether")
+):
+    account = account if account else get_account()
+    link_token = link_token if link_token else get_contract("link_token")
+    funding_transaction = link_token.transfer(
+        contract_address, amount, {"from": account}
+    )
+    funding_transaction.wait(1)
+    print(f"Funded {contract_address}")
+    return funding_transaction
