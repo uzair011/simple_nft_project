@@ -12,14 +12,20 @@ contract AdvancedCollectible is ERC721, VRFConsumerBase {
     uint256 public tokenCounter;
     bytes32 public keyhash;
     uint256 public fee;
+
     enum Breed {
         PUG,
         SHIBA_INU,
         ST_BERNERD
     }
+
     mapping(uint256 => Breed) public tokenIdToBreed;
     mapping(bytes32 => address) public requestIdToSender;
+    // mapping(bytes32 => string) public requestIdToTokenURI;
+    // mapping(bytes32 => uint256) public requestIdToTokenId;
+
     event requestedCollectible(bytes32 indexed requestId, address requester);
+    // event ReturnedCollectible(bytes32 indexed requestId, uint256 randomNumber);
     event breedAssigned(uint256 indexed tokenId, Breed breed);
 
     constructor(
@@ -37,17 +43,15 @@ contract AdvancedCollectible is ERC721, VRFConsumerBase {
         fee = _fee;
     }
 
-    function createCollectible(string memory tokenURI)
-        public
-        returns (bytes32)
-    {
+    //function createCollectible(string memory tokenURI)
+    function createCollectible() public returns (bytes32) {
         bytes32 requestId = requestRandomness(keyhash, fee);
-        requestIdToSenter[requestId] = msg.sender;
-        //requestidToTokenURI[requestId] = tokenURI; //////// here...
+        requestIdToSender[requestId] = msg.sender;
+        // requestIdToTokenURI[requestId] = tokenURI; //////// here...
         emit requestedCollectible(requestId, msg.sender);
     }
 
-    function fullFillRandomness(bytes32 requestId, uint256 randomNumber)
+    function fulfillRandomness(bytes32 requestId, uint256 randomNumber)
         internal
         override
     {
@@ -56,19 +60,17 @@ contract AdvancedCollectible is ERC721, VRFConsumerBase {
         tokenIdToBreed[newTokenId] = breed;
         emit breedAssigned(newTokenId, breed);
         address owner = requestIdToSender[requestId];
-        _safeMInt(owner, newTokenId);
+        _safeMint(owner, newTokenId);
         //_setTokenURI(newTokenId, tokenURI);
         tokenCounter += tokenCounter;
+        // emit ReturnedCollectible(requestId, randomNumber);
     }
 
     function setTokenURI(uint256 tokenId, string memory _tokenURI) public {
         // pug shiba-inu, st-bernard
         require(
-            _isApprovedOrOwner(
-                _msgSender(),
-                tokenId,
-                "ERC721: caller isn't owner approved..."
-            )
+            _isApprovedOrOwner(_msgSender(), tokenId),
+            "ERC721: caller isn't owner, no approved..."
         );
         _setTokenURI(tokenId, _tokenURI);
     }
