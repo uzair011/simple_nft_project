@@ -1,9 +1,13 @@
-from brownie import accounts, network, config, VRFCoordinatorMock, LinkToken, Contract
+from brownie import config, accounts, network, VRFCoordinatorMock, LinkToken, Contract
 from web3 import Web3
 
-
-OPENSEA_URL = "https://testnets.opensea.io/assets/{}/{}"
 LOCAL_BLOCKCHAIN_ENVS = ["development", "ganache-local", "mainnet-fork-dev"]
+OPENSEA_URL = "https://testnets.opensea.io/assets/{}/{}"
+BREED_MAPPING = {0: "PUG", 1: "SHIBA_INU", 2: "ST_BERNARD"}
+
+
+def get_breed(breed_number):
+    return BREED_MAPPING[breed_number]
 
 
 def get_account(id=None, index=None):
