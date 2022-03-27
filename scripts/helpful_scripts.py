@@ -3,6 +3,7 @@ from web3 import Web3
 
 LOCAL_BLOCKCHAIN_ENVS = ["development", "ganache-local", "mainnet-fork-dev"]
 OPENSEA_URL = "https://testnets.opensea.io/assets/{}/{}"
+
 BREED_MAPPING = {0: "PUG", 1: "SHIBA_INU", 2: "ST_BERNARD"}
 
 

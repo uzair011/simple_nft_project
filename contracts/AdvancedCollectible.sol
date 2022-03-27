@@ -12,18 +12,14 @@ contract AdvancedCollectible is ERC721, VRFConsumerBase {
     uint256 public tokenCounter;
     bytes32 public keyhash;
     uint256 public fee;
-
     enum Breed {
         PUG,
         SHIBA_INU,
-        ST_BERNERD
+        ST_BERNARD
     }
-
     mapping(uint256 => Breed) public tokenIdToBreed;
     mapping(bytes32 => address) public requestIdToSender;
-
     event requestedCollectible(bytes32 indexed requestId, address requester);
-    // event ReturnedCollectible(bytes32 indexed requestId, uint256 randomNumber);
     event breedAssigned(uint256 indexed tokenId, Breed breed);
 
     constructor(
@@ -34,7 +30,7 @@ contract AdvancedCollectible is ERC721, VRFConsumerBase {
     )
         public
         VRFConsumerBase(_vrfCoordinator, _linkToken)
-        ERC721("happyDog", "DOG")
+        ERC721("Dogie", "DOG")
     {
         tokenCounter = 0;
         keyhash = _keyhash;
@@ -44,7 +40,6 @@ contract AdvancedCollectible is ERC721, VRFConsumerBase {
     function createCollectible() public returns (bytes32) {
         bytes32 requestId = requestRandomness(keyhash, fee);
         requestIdToSender[requestId] = msg.sender;
-        // requestIdToTokenURI[requestId] = tokenURI; //////// here...
         emit requestedCollectible(requestId, msg.sender);
     }
 
@@ -59,15 +54,90 @@ contract AdvancedCollectible is ERC721, VRFConsumerBase {
         address owner = requestIdToSender[requestId];
         _safeMint(owner, newTokenId);
         tokenCounter = tokenCounter + 1;
-        // emit ReturnedCollectible(requestId, randomNumber);
     }
 
     function setTokenURI(uint256 tokenId, string memory _tokenURI) public {
-        // pug shiba-inu, st-bernard
+        // pug, shiba inu, st bernard
         require(
             _isApprovedOrOwner(_msgSender(), tokenId),
-            "ERC721: caller isn't owner, no approved..."
+            "ERC721: caller is not owner no approved"
         );
         _setTokenURI(tokenId, _tokenURI);
     }
 }
+//!------------------------------------–––––
+
+// import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+// import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
+
+// contract AdvancedCollectible is ERC721, VRFConsumerBase {
+//     uint256 public tokenCounter;
+//     bytes32 public keyhash;
+//     uint256 public fee;
+
+//     enum Breed {
+//         PUG,
+//         SHIBA_INU,
+//         ST_BERNERD
+//     }
+
+//     mapping(uint256 => Breed) public tokenIdToBreed;
+//     mapping(bytes32 => address) public requestIdToSender;
+//     mapping(bytes32 => string) public requestIdToTokenURI;
+//     mapping(bytes32 => uint256) public requestIdToTokenId;
+
+//     event requestedCollectible(bytes32 indexed requestId, address requester);
+//     event ReturnedCollectible(bytes32 indexed requestId, uint256 randomNumber);
+//     event breedAssigned(uint256 indexed tokenId, Breed breed);
+
+//     constructor(
+//         address _vrfCoordinator,
+//         address _linkToken,
+//         bytes32 _keyhash
+//     )
+//         public
+//         //uint256 _fee
+//         VRFConsumerBase(_vrfCoordinator, _linkToken)
+//         ERC721("happyDog", "DOG")
+//     {
+//         tokenCounter = 0;
+//         keyhash = _keyhash;
+//         fee = 0.1 * 10**18;
+//     }
+
+//     function createCollectible(string memory tokenURI)
+//         public
+//         returns (bytes32)
+//     {
+//         bytes32 requestId = requestRandomness(keyhash, fee);
+//         requestIdToSender[requestId] = msg.sender;
+//         requestIdToTokenURI[requestId] = tokenURI; //////// here...
+//         emit requestedCollectible(requestId, msg.sender);
+//     }
+
+//     function fulfillRandomness(bytes32 requestId, uint256 randomNumber)
+//         internal
+//         override
+//     {
+//         address owner = requestIdToSender[requestId];
+//         string memory tokenURI = requestIdToTokenURI[requestId];
+//         uint256 newItemId = tokenCounter;
+//         _safeMint(owner, newItemId);
+//         _setTokenURI(newItemId, tokenURI);
+//         Breed breed = Breed(randomNumber % 3);
+//         tokenIdToBreed[newItemId] = breed;
+//         requestIdToTokenURI[requestId] = newItemId;
+//         tokenCounter = tokenCounter + 1;
+//         //emit breedAssigned(newTokenId, breed);
+//         emit ReturnedCollectible(requestId, randomNumber);
+//     }
+
+//     function setTokenURI(uint256 tokenId, string memory _tokenURI) public {
+//         // pug shiba-inu, st-bernard
+//         require(
+//             _isApprovedOrOwner(_msgSender(), tokenId),
+//             "ERC721: caller isn't owner, no approved..."
+//         );
+//         _setTokenURI(tokenId, _tokenURI);
+//     }
+// }
